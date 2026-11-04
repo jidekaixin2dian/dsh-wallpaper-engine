@@ -30,6 +30,7 @@ function assertChildren(children) {
 // 定时器可以 fire）、按壁纸 token 切换 __wpStats.frame()、setInterval、媒体记账。
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { weFullPreviewUrl } from '../src/we-base.js';
 
 // 渐变退役定时器 = ROTATION_FADE_MS + 100ms 宽限：从被测源码读常量，改时长
 // 不用同步改这里的硬编码。注意必须模块级定义 —— 场景 body 回调在模块作用域
@@ -944,7 +945,7 @@ await runScenario('P. 首帧前垫底图：抓帧 → 作者预览图 → 主题
   const poster = layer && layer.querySelector('div.we-live-poster');
   check('场景 live 层带垫底图（不是空层）', !!poster);
   const frameSrc = '/wallpaper-engine/scene-frame/s1';
-  const previewSrc = '/wallpaper-engine/preview/s1';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/s1'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   const probeFrame = posterProbeForFrame(t, frameSrc);
   check('① 垫底图先试**实时抓帧**（当前视口的真实构图优先于预览图）',
     !!probeFrame, 'probe=' + (probeFrame ? t.mediaSrc(probeFrame) : 'none'));
@@ -1062,7 +1063,7 @@ await runScenario('P3. 无缓存实时帧：第 1 级仍在飞行中 ⇒ 缩略�
 }, (t) => {
   const poster = posterOf(t);
   const frameSrc = '/wallpaper-engine/scene-frame/s1';
-  const previewSrc = '/wallpaper-engine/preview/s1';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/s1'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   const probeFrame = posterProbeForFrame(t, frameSrc);
   const probePreview = posterProbeFor(t, previewSrc);
   check('① 抓帧未定（既未成功也未失败）时，两张探针**都已发出**（并行请求，不互相门控）',
@@ -1090,7 +1091,7 @@ await runScenario('P4. 无缓存实时帧：第 1 级成功 ⇒ 真帧上屏，�
 }, (t) => {
   const poster = posterOf(t);
   const frameSrc = '/wallpaper-engine/scene-frame/s1';
-  const previewSrc = '/wallpaper-engine/preview/s1';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/s1'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   const probeFrame = posterProbeForFrame(t, frameSrc);
   const probePreview = posterProbeFor(t, previewSrc);
   check('① 两张探针同场竞速（"谁允许上屏"的前提：两张都可能到）',
@@ -1120,7 +1121,7 @@ await runScenario('P5. 无缓存实时帧：第 1 级判失败 ⇒ 已就绪的�
 }, (t) => {
   const poster = posterOf(t);
   const frameSrc = '/wallpaper-engine/scene-frame/s1';
-  const previewSrc = '/wallpaper-engine/preview/s1';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/s1'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   const probeFrame = posterProbeForFrame(t, frameSrc);
   const probePreview = posterProbeFor(t, previewSrc);
   const colorBefore = posterColor(poster);
@@ -1152,7 +1153,7 @@ await runScenario('P6. 缓存实时帧存在：建层那一刻就是实时帧（
   selection: selSeed(['v', 's1'], 's1'),   // 启动即选中 s1：冷的那一次建层立刻发生
 }, (t) => {
   const frameSrc = '/wallpaper-engine/scene-frame/s1';
-  const previewSrc = '/wallpaper-engine/preview/s1';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/s1'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   const frameProbes = () => t.imageEls.filter((i) => String(t.mediaSrc(i) || '').split('?')[0] === frameSrc);
   const previewProbes = () => t.imageEls.filter((i) => t.mediaSrc(i) === previewSrc);
 
@@ -1212,7 +1213,7 @@ await runScenario('P7. 拿不到 object URL：命中仍同步上帧（插入已�
   noFrameBytes: true,               // canvas.toBlob 拿不到字节这一档
 }, (t) => {
   const frameSrc = '/wallpaper-engine/scene-frame/s7';
-  const previewSrc = '/wallpaper-engine/preview/s7';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/s7'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   // 只数**网络探针**：`new Image()` 建的那种（没有 `data-we-frame-src`）。命中时插进屏里的那个
   // 已解码元素带这个标记 —— 它是留住的字节，不是一次新请求，两者必须分开数。
   const frameMark = (i) => String((i && i.attributes && i.attributes['data-we-frame-src']) || '');
@@ -1320,7 +1321,7 @@ await runScenario('X1. web 壁纸：宿主发的 liveFrame 成为垫底图第 1 
   selection: selSeed(['w1'], 'w1'),
 }, (t) => {
   const frameSrc = '/wallpaper-engine/live-frame/w1';
-  const previewSrc = '/wallpaper-engine/preview/w1';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/w1'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   const cold = webFrameFacts(t, frameSrc, previewSrc);
   check('① web 支的候选表首项是**宿主发的实时帧**（不是作者预览图）',
     cold.head === frameSrc, 'head=' + cold.head);
@@ -1345,7 +1346,7 @@ await runScenario('X2. 负对照：宿主没发 liveFrame ⇒ web 支没有帧�
   selection: selSeed(['w1'], 'w1'),
 }, (t) => {
   const frameSrc = '/wallpaper-engine/live-frame/w1';
-  const previewSrc = '/wallpaper-engine/preview/w1';
+  const previewSrc = weFullPreviewUrl('/wallpaper-engine/preview/w1'); // 全屏口径：垫底地址带 ?full，见 src/we-base.js
   const cold = webFrameFacts(t, frameSrc, previewSrc);
   check('① 首项退到作者预览图（这一档确实没有实时帧候选）',
     cold.head === previewSrc, 'head=' + cold.head);
